@@ -83,7 +83,14 @@ case class PegSolitaireTest(name: String) extends TestCase(name){
       Board(8, Set((1,1),(2,2))), reduceBoardWithRemoval(board, move))
   }
 
-  def testBigStepSolve: Unit = {
-    assertEquals("Board of size 3 is not solvable", true, solve(3, (2,0)).isEmpty)
+  def testBigStepSolve1: Unit = {
+    assertTrue("Board of size 3 is not solvable using bigstep solve", bigStepSolve(3, (2,0)).isEmpty)
   }
+
+  def testBigStepSolve2: Unit = {
+    assertTrue("Board of size 5 is solvable using bigstep-solve, using less steps than solve",
+      bigStepSolve(5, (2,0)).get.size < solve(5, (2,0)).get.size)
+  }
+
+
 }

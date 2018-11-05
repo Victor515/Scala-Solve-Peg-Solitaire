@@ -122,12 +122,6 @@ object PegSolitaire {
 
   def bigStepSolveHelper(boards: Queue[Board], coordinates: List[(Int, Int)],
                          removals: Queue[List[Removal]]): Option[List[Removal]] = {
-    // TODO:
-    // 1. Dequeue a board and its move list
-    // 2. Find all possible next moves
-    // 3. generate next boards, add to queue
-    // 4. If queue is not empty, repeat
-    // Do I need to set to record visited boards?
     val (curBoard,boardqTemp) = boards.dequeue
     val (removalList, removalqTemp) = removals.dequeue
 
@@ -187,69 +181,159 @@ object PegSolitaire {
     if(holes contains peg){
       ans
     }
-    ans = nextMove(board, peg)
-    val (x, y) = peg
+    else {
+      ans = nextMove(board, peg)
 
-    var pegsRemoval :List[(Int, Int)] = Nil
-    if(!(holes contains (x - 2, y - 2)) && !(holes contains (x - 1, y - 1))
-      && (coordinates contains (x - 2, y - 2)) && (coordinates contains (x - 1, y - 2))){
-      pegsRemoval = (x - 2, y - 2) :: pegsRemoval
-    }
-    if(!(holes contains (x - 2, y)) && !(holes contains (x - 1, y))
-      && (coordinates contains (x - 2, y)) && (coordinates contains (x - 1, y))){
-      pegsRemoval = (x - 2, y) :: pegsRemoval
-    }
-    if(!(holes contains (x, y - 2)) && !(holes contains (x, y - 1))
-      && (coordinates contains (x, y - 2)) && (coordinates contains (x, y - 1))){
-      pegsRemoval = (x, y - 2) :: pegsRemoval
-    }
-    if(!(holes contains (x, y + 2)) && !(holes contains (x, y + 1))
-      && (coordinates contains (x, y + 2)) && (coordinates contains (x, y + 1))){
-      pegsRemoval = (x, y + 2) :: pegsRemoval
-    }
-    if(!(holes contains (x + 2, y)) && !(holes contains (x + 1, y))
-      && (coordinates contains (x + 2, y)) && (coordinates contains (x + 1, y))){
-      pegsRemoval = (x + 2, y) :: pegsRemoval
-    }
-    if(!(holes contains (x + 2, y + 2)) && !(holes contains (x + 1, y + 1))
-      && (coordinates contains (x + 2, y + 2)) && (coordinates contains (x + 1, y + 1))){
-      pegsRemoval = (x + 2, y + 2) :: pegsRemoval
-    }
+      val (x, y) = peg
 
-    var hasAdjacentHoles = false
-
-    if((holes contains (x - 1, y - 1)) && !(holes contains (x + 1, y + 1))
-      && (coordinates contains (x + 1, y + 1))){
-      hasAdjacentHoles = true
-    }
-    if((holes contains (x + 1, y + 1)) && !(holes contains (x - 1, y - 1))
-      && (coordinates contains (x - 1, y - 1))){
-      hasAdjacentHoles = true
-    }
-    if((holes contains (x - 1, y)) && !(holes contains (x + 1, y))
-      && (coordinates contains (x + 1, y))){
-      hasAdjacentHoles = true
-    }
-    if((holes contains (x + 1, y)) && !(holes contains (x - 1, y))
-      && (coordinates contains (x - 1, y))){
-      hasAdjacentHoles = true
-    }
-    if((holes contains (x, y - 1)) && !(holes contains (x , y + 1))
-      && (coordinates contains (x, y + 1))){
-      hasAdjacentHoles = true
-    }
-    if((holes contains (x, y + 1)) && !(holes contains (x, y - 1))
-      && (coordinates contains (x, y - 1))){
-      hasAdjacentHoles = true
-    }
-
-    if(hasAdjacentHoles){
-      for(pegRemoval <- pegsRemoval){
-        ans = SegmentRemoval(peg, ((peg._1 + pegRemoval._1)/2, (peg._2 + pegRemoval._2)/2), pegRemoval) :: ans
+      var pegsRemoval: Set[(Int, Int)] = Set()
+      if (!(holes contains(x - 2, y - 2)) && !(holes contains(x - 1, y - 1))
+        && (coordinates contains(x - 2, y - 2)) && (coordinates contains(x - 1, y - 2))) {
+        pegsRemoval =  pegsRemoval + ((x - 2, y - 2))
       }
-    }
+      if (!(holes contains(x - 2, y)) && !(holes contains(x - 1, y))
+        && (coordinates contains(x - 2, y)) && (coordinates contains(x - 1, y))) {
+        pegsRemoval = pegsRemoval + ((x - 2, y))
+      }
+      if (!(holes contains(x, y - 2)) && !(holes contains(x, y - 1))
+        && (coordinates contains(x, y - 2)) && (coordinates contains(x, y - 1))) {
+        pegsRemoval = pegsRemoval + ((x, y - 2))
+      }
+      if (!(holes contains(x, y + 2)) && !(holes contains(x, y + 1))
+        && (coordinates contains(x, y + 2)) && (coordinates contains(x, y + 1))) {
+        pegsRemoval = pegsRemoval + ((x, y + 2))
+      }
+      if (!(holes contains(x + 2, y)) && !(holes contains(x + 1, y))
+        && (coordinates contains(x + 2, y)) && (coordinates contains(x + 1, y))) {
+        pegsRemoval = pegsRemoval + ((x + 2, y))
+      }
+      if (!(holes contains(x + 2, y + 2)) && !(holes contains(x + 1, y + 1))
+        && (coordinates contains(x + 2, y + 2)) && (coordinates contains(x + 1, y + 1))) {
+        pegsRemoval = pegsRemoval + ((x + 2, y + 2))
+      }
 
-    ans
+
+      if ((holes contains(x - 1, y - 1)) && !(holes contains(x + 1, y + 1))
+        && (coordinates contains(x + 1, y + 1))) {
+        if(pegsRemoval contains (x - 2, y)){
+          ans = SegmentRemoval(peg, (x - 1, y), (x - 2, y)) :: ans
+          pegsRemoval = pegsRemoval - ((x - 2, y))
+        }
+        if(pegsRemoval contains (x, y - 2)){
+          ans = SegmentRemoval(peg, (x, y - 1), (x, y - 2)) :: ans
+          pegsRemoval = pegsRemoval - ((x, y - 2))
+        }
+        if(pegsRemoval contains (x, y + 2)){
+          ans = SegmentRemoval(peg, (x, y + 1), (x, y + 2)) :: ans
+          pegsRemoval = pegsRemoval - ((x, y + 2))
+        }
+        if(pegsRemoval contains (x + 2, y)){
+          ans = SegmentRemoval(peg, (x + 1, y), (x + 2, y)) :: ans
+          pegsRemoval = pegsRemoval - ((x + 2, y))
+        }
+      }
+
+      if ((holes contains(x + 1, y + 1)) && !(holes contains(x - 1, y - 1))
+        && (coordinates contains(x - 1, y - 1))) {
+        if(pegsRemoval contains (x - 2, y)){
+          ans = SegmentRemoval(peg, (x - 1, y), (x - 2, y)) :: ans
+          pegsRemoval = pegsRemoval - ((x - 2, y))
+        }
+        if(pegsRemoval contains (x, y - 2)){
+          ans = SegmentRemoval(peg, (x, y - 1), (x, y - 2)) :: ans
+          pegsRemoval = pegsRemoval - ((x, y - 2))
+        }
+        if(pegsRemoval contains (x, y + 2)){
+          ans = SegmentRemoval(peg, (x, y + 1), (x, y + 2)) :: ans
+          pegsRemoval = pegsRemoval - ((x, y + 2))
+        }
+        if(pegsRemoval contains (x + 2, y)){
+          ans = SegmentRemoval(peg, (x + 1, y), (x + 2, y)) :: ans
+          pegsRemoval = pegsRemoval - ((x + 2, y))
+        }
+      }
+
+      if ((holes contains(x - 1, y)) && !(holes contains(x + 1, y))
+        && (coordinates contains(x + 1, y))) {
+        if(pegsRemoval contains (x - 2, y - 2)){
+          ans = SegmentRemoval(peg, (x - 1, y - 1), (x - 2, y - 2)) :: ans
+          pegsRemoval = pegsRemoval - ((x - 2, y - 2))
+        }
+        if(pegsRemoval contains (x + 2, y + 2)){
+          ans = SegmentRemoval(peg, (x + 1, y + 1), (x + 2, y + 2)) :: ans
+          pegsRemoval = pegsRemoval - ((x + 2, y + 2))
+        }
+        if(pegsRemoval contains (x, y + 2)){
+          ans = SegmentRemoval(peg, (x, y + 1), (x, y + 2)) :: ans
+          pegsRemoval = pegsRemoval - ((x, y + 2))
+        }
+        if(pegsRemoval contains (x, y - 2)){
+          ans = SegmentRemoval(peg, (x, y - 1), (x, y - 2)) :: ans
+          pegsRemoval = pegsRemoval - ((x, y - 2))
+        }
+      }
+
+      if ((holes contains(x + 1, y)) && !(holes contains(x - 1, y))
+        && (coordinates contains(x - 1, y))) {
+        if(pegsRemoval contains (x - 2, y - 2)){
+          ans = SegmentRemoval(peg, (x - 1, y - 1), (x - 2, y - 2)) :: ans
+          pegsRemoval = pegsRemoval - ((x - 2, y - 2))
+        }
+        if(pegsRemoval contains (x + 2, y + 2)){
+          ans = SegmentRemoval(peg, (x + 1, y + 1), (x + 2, y + 2)) :: ans
+          pegsRemoval = pegsRemoval - ((x + 2, y + 2))
+        }
+        if(pegsRemoval contains (x, y + 2)){
+          ans = SegmentRemoval(peg, (x, y + 1), (x, y + 2)) :: ans
+          pegsRemoval = pegsRemoval - ((x, y + 2))
+        }
+        if(pegsRemoval contains (x, y - 2)){
+          ans = SegmentRemoval(peg, (x, y - 1), (x, y - 2)) :: ans
+          pegsRemoval = pegsRemoval - ((x, y - 2))
+        }
+      }
+
+      if ((holes contains(x, y - 1)) && !(holes contains(x, y + 1))
+        && (coordinates contains(x, y + 1))) {
+        if(pegsRemoval contains (x - 2, y)){
+          ans = SegmentRemoval(peg, (x - 1, y), (x - 2, y)) :: ans
+          pegsRemoval = pegsRemoval - ((x - 2, y))
+        }
+        if(pegsRemoval contains (x + 2, y)){
+          ans = SegmentRemoval(peg, (x + 1, y), (x + 2, y)) :: ans
+          pegsRemoval = pegsRemoval - ((x + 2, y))
+        }
+        if(pegsRemoval contains (x - 2, y - 2)){
+          ans = SegmentRemoval(peg, (x - 1, y - 1), (x - 2, y - 2)) :: ans
+          pegsRemoval = pegsRemoval - ((x - 2, y - 2))
+        }
+        if(pegsRemoval contains (x + 2, y + 2)){
+          ans = SegmentRemoval(peg, (x + 1, y + 1), (x + 2, y + 2)) :: ans
+          pegsRemoval = pegsRemoval - ((x + 2, y + 2))
+        }
+      }
+
+      if ((holes contains(x, y + 1)) && !(holes contains(x, y - 1))
+        && (coordinates contains(x, y - 1))) {
+        if(pegsRemoval contains (x - 2, y)){
+          ans = SegmentRemoval(peg, (x - 1, y), (x - 2, y)) :: ans
+          pegsRemoval = pegsRemoval - ((x - 2, y))
+        }
+        if(pegsRemoval contains (x + 2, y)){
+          ans = SegmentRemoval(peg, (x + 1, y), (x + 2, y)) :: ans
+          pegsRemoval = pegsRemoval - ((x + 2, y))
+        }
+        if(pegsRemoval contains (x - 2, y - 2)){
+          ans = SegmentRemoval(peg, (x - 1, y - 1), (x - 2, y - 2)) :: ans
+          pegsRemoval = pegsRemoval - ((x - 2, y - 2))
+        }
+        if(pegsRemoval contains (x + 2, y + 2)){
+          ans = SegmentRemoval(peg, (x + 1, y + 1), (x + 2, y + 2)) :: ans
+          pegsRemoval = pegsRemoval - ((x + 2, y + 2))
+        }
+      }
+      ans
+    }
   }
 
   def reduceBoardWithRemoval(board: Board, removal: Removal): Board = {
